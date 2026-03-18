@@ -407,6 +407,7 @@ void *spectrum_publisher_thread(void *arg)
 // ---------------- HIGH-LEVEL INIT / SHUTDOWN ----------------
 
 int ui_comm_init(ui_ctx_t *ctx, uint16_t ws_port, bool tls_enabled,
+                 const char *cert_path, const char *key_path,
                  int waterfall_enabled, int audio_system,
                  const char *selected_capture, const char *selected_playback,
                  int rx_input_channel)
@@ -430,7 +431,7 @@ int ui_comm_init(ui_ctx_t *ctx, uint16_t ws_port, bool tls_enabled,
     // Initialize WebSocket server (bidirectional: status TX + command RX)
     // Serve static test page from websocket/web/ directory
     if (ws_init(&ctx->ws, ws_port, "gui_interface/websocket/web",
-                ws_command_handler, ctx, tls_enabled) != 0) {
+                ws_command_handler, ctx, tls_enabled, cert_path, key_path) != 0) {
         HLOGE(UI_LOG_TAG, "Failed to init WebSocket server on port %u", ws_port);
         return -1;
     }

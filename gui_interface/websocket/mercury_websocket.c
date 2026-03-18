@@ -63,17 +63,20 @@ static void ws_free_tls_material(void)
     }
 }
 
-static int ws_load_tls_material(void)
+static int ws_load_tls_material(const char *cert_path, const char *key_path)
 {
-    s_tls_cert = mg_file_read(&mg_fs_posix, CFG_SSL_CERT);
+    if (!cert_path) cert_path = CFG_SSL_CERT;
+    if (!key_path)  key_path  = CFG_SSL_KEY;
+
+    s_tls_cert = mg_file_read(&mg_fs_posix, cert_path);
     if (s_tls_cert.buf == NULL) {
-        HLOGE(WS_LOG_TAG, "Failed to read TLS certificate: %s", CFG_SSL_CERT);
+        HLOGE(WS_LOG_TAG, "Failed to read TLS certificate: %s", cert_path);
         return -1;
     }
 
-    s_tls_key = mg_file_read(&mg_fs_posix, CFG_SSL_KEY);
+    s_tls_key = mg_file_read(&mg_fs_posix, key_path);
     if (s_tls_key.buf == NULL) {
-        HLOGE(WS_LOG_TAG, "Failed to read TLS private key: %s", CFG_SSL_KEY);
+        HLOGE(WS_LOG_TAG, "Failed to read TLS private key: %s", key_path);
         ws_free_tls_material();
         return -1;
     }
@@ -303,7 +306,9 @@ int ws_init(ws_ctx_t *ctx,
             const char *web_root,
             ws_command_callback_t cmd_callback,
             void *cb_data,
-            bool tls_enabled)
+            bool tls_enabled,
+            const char *cert_path,
+            const char *key_path)
 {
     if (!ctx)
         return -1;
@@ -324,7 +329,7 @@ int ws_init(ws_ctx_t *ctx,
 
 #if MG_TLS != MG_TLS_NONE
     if (tls_enabled) {
-        if (ws_load_tls_material() != 0) {
+        if (ws_load_tls_material(cert_path, key_path) != 0) {
             ctx->running = false;
             return -1;
         }

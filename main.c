@@ -97,7 +97,7 @@ static int parse_rx_channel_layout(const char *value)
 static void print_usage(const char *prog)
 {
     printf("Usage modes: \n");
-    printf("%s -m [mode_index] -i [device] -o [device] -x [sound_system] -p [arq_tcp_base_port] -b [broadcast_tcp_port] -f [freedv_verbosity] -k [rx_input_channel] [-G] [-T] [-U ui_port] [-W]\n", prog);
+    printf("%s -m [mode_index] -i [device] -o [device] -x [sound_system] -p [arq_tcp_base_port] -b [broadcast_tcp_port] -f [freedv_verbosity] -k [rx_input_channel] [-G] [-T] [-C cert_path] [-P key_path] [-U ui_port] [-W]\n", prog);
     printf("%s [-h -l -z]\n", prog);
     printf("\nOptions:\n");
     printf(" -c [cpu_nr]                Run on CPU [cpu_nr]. Use -1 to disable CPU selection, which is the default.\n");
@@ -114,6 +114,8 @@ static void print_usage(const char *prog)
     printf(" -W                         Disable waterfall/spectrum data sent to the UI (used to spare CPU).\n");
     printf(" -G                         Enable UI communication (WebSocket server for mercury-qt). Off by default.\n");
     printf(" -T                         Use WSS (WebSocket Secure/TLS) for UI communication. Requires -G. Default uses plain WS (no TLS).\n");
+    printf(" -C [cert_path]             Path to PEM certificate file for WSS. Requires -G and -T. Default: %s\n", CFG_SSL_CERT);
+    printf(" -P [key_path]              Path to PEM private key file for WSS. Requires -G and -T. Default: %s\n", CFG_SSL_KEY);
     printf(" -l                         Lists all modulator/coding modes.\n");
     printf(" -z                         Lists all available sound cards.\n");
     printf(" -v                         Verbose mode. Prints more information during execution.\n");
@@ -164,6 +166,8 @@ int main(int argc, char *argv[])
     bool waterfall_enabled = true;
     bool ui_enabled = false;
     bool tls_enabled = false;
+    const char *tls_cert_path = NULL;
+    const char *tls_key_path = NULL;
     int startup_payload_mode = FREEDV_MODE_DATAC3;
     int freedv_verbosity = 0;
     int rx_input_channel = LEFT;
@@ -178,7 +182,7 @@ int main(int argc, char *argv[])
     bool list_radio_models = false;
 
     int opt;
-    while ((opt = getopt(argc, argv, "hc:s:m:f:k:li:o:x:p:b:zvtrL:JR:U:A:SKWGT")) != -1)
+    while ((opt = getopt(argc, argv, "hc:s:m:f:k:li:o:x:p:b:zvtrL:JR:U:A:SKWGTC:P:")) != -1)
     {
         switch (opt)
         {
@@ -194,6 +198,14 @@ int main(int argc, char *argv[])
             break;
         case 'T':
             tls_enabled = true;
+            break;
+        case 'C':
+            if (optarg)
+                tls_cert_path = optarg;
+            break;
+        case 'P':
+            if (optarg)
+                tls_key_path = optarg;
             break;
 	case 't':
             test_mode = 1;
@@ -565,6 +577,7 @@ int main(int argc, char *argv[])
         HLOGI("main", "Initializing UI communication (WebSocket port %u | TLS %s | Waterfall %s)",
                ui_port, tls_enabled ? "WSS" : "WS", waterfall_enabled ? "enabled" : "disabled");
         if (ui_comm_init(&ui_ctx, (uint16_t)ui_port, tls_enabled,
+                         tls_cert_path, tls_key_path,
                          waterfall_enabled ? 1 : 0,
                          audio_system, input_dev, output_dev, rx_input_channel) != 0)
         {

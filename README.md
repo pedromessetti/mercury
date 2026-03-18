@@ -37,7 +37,7 @@ over HF radio links in rural and emergency scenarios.
 
 ```
 Usage modes:
-./mercury -m [mode_index] -i [device] -o [device] -x [sound_system] -p [arq_tcp_base_port] -b [broadcast_tcp_port] -f [freedv_verbosity] -k [rx_input_channel] [-G] [-T] [-U ui_port] [-W]
+./mercury -m [mode_index] -i [device] -o [device] -x [sound_system] -p [arq_tcp_base_port] -b [broadcast_tcp_port] -f [freedv_verbosity] -k [rx_input_channel] [-G] [-T] [-C cert_path] [-P key_path] [-U ui_port] [-W]
 ./mercury [-h -l -z]
 
 Options:
@@ -53,6 +53,8 @@ Options:
  -b [broadcast_tcp_port]    Sets the broadcast TCP port. Default is 8100.
  -G                         Enable UI communication (WebSocket status/spectrum/command interface for mercury-qt). Off by default.
  -T                         Use WSS (WebSocket Secure/TLS) for UI communication. Requires -G. Default uses plain WS (no TLS).
+ -C [cert_path]             Path to PEM certificate file for WSS. Requires -G and -T. Default: /etc/ssl/certs/hermes.radio.crt
+ -P [key_path]              Path to PEM private key file for WSS. Requires -G and -T. Default: /etc/ssl/private/hermes.radio.key
  -U [ui_port]               Sets the UI port (WebSocket port). Default is 10000. Requires -G.
  -W                         Disable waterfall/spectrum data sent to the UI (saves CPU). Requires -G.
  -l                         Lists all modulator/coding modes.

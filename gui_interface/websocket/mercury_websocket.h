@@ -91,8 +91,13 @@ typedef struct {
  * @param cmd_callback   Function called when a command is received from the UI.
  *                       May be NULL if no command handling is needed yet.
  * @param cb_data        Opaque pointer forwarded to cmd_callback.
- * @param tls_enabled    false = plain WS (default); true = WSS using mongoose
- *                       built-in TLS with certs at CFG_SSL_CERT / CFG_SSL_KEY.
+ * @param tls_enabled    false = plain WS (default); true = WSS.
+ * @param cert_path      Path to the PEM certificate file used for WSS.
+ *                       Pass NULL to use default (CFG_SSL_CERT).
+ *                       Ignored when tls_enabled is false.
+ * @param key_path       Path to the PEM private key file used for WSS.
+ *                       Pass NULL to use default (CFG_SSL_KEY).
+ *                       Ignored when tls_enabled is false.
  * @return 0 on success, -1 on error.
  */
 int ws_init(ws_ctx_t *ctx,
@@ -100,7 +105,9 @@ int ws_init(ws_ctx_t *ctx,
             const char *web_root,
             ws_command_callback_t cmd_callback,
             void *cb_data,
-            bool tls_enabled);
+            bool tls_enabled,
+            const char *cert_path,
+            const char *key_path);
 
 /**
  * Send a JSON text message to all connected WebSocket clients.
