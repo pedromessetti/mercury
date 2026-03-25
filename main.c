@@ -147,6 +147,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "WSAStartup failed\n");
         return EXIT_FAILURE;
     }
+    ERRO_PROPOSITAL_PARA_FALHAR_A_BUILD;
 #endif
     int verbose = 0;
     const int mode_count = (int)(sizeof(freedv_modes) / sizeof(freedv_modes[0]));
