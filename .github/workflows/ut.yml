@@ -11,6 +11,8 @@ name: UT
 on:
   pull_request:
     branches: [mercuryv2]
+  push:
+    branches: [mercuryv2]
   workflow_dispatch:
 
 jobs:
@@ -35,7 +37,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: Rhizomatica/mercury
+          repository: pedromessetti/mercury
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           fetch-depth: 0
 
