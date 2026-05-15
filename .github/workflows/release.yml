@@ -85,14 +85,27 @@ jobs:
           }
           echo "Collecting PRs since: ${LAST_TAG}"
 
+          # Get the ISO timestamp of the tag's commit so we can query the API
+          LAST_TAG_DATE=$(git log -1 --format="%cI" "${LAST_TAG}")
+          echo "Tag commit date: ${LAST_TAG_DATE}"
+
+          # Query GitHub directly for PRs merged into mercuryv2 after that date,
+          # sorted oldest-first so the changelog order matches the release history.
+          PR_TITLES=$(gh pr list \
+            --repo pedromessetti/mercury \
+            --state merged \
+            --base mercuryv2 \
+            --search "merged:>${LAST_TAG_DATE}" \
+            --limit 200 \
+            --json title,mergedAt \
+            --jq 'sort_by(.mergedAt) | .[].title')
+
           PR_ENTRIES=""
-          while IFS= read -r num; do
-            [[ -z "$num" ]] && continue
-            title=$(gh pr view "$num" --json title --jq '.title' --repo Rhizomatica/mercury)
-            title="${title%.}"
+          while IFS= read -r title; do
+            [[ -z "$title" ]] && continue
+            title="${title%.}"  # strip trailing period if present
             PR_ENTRIES="${PR_ENTRIES}  * ${title}.\n"
-          done < <(git log "${LAST_TAG}..HEAD" --merges --pretty=format:"%s" \
-                   | grep -oP 'pull request #\K\d+' || true)
+          done <<< "$PR_TITLES"
 
           {
             echo 'PR_ENTRIES<<EOF'
@@ -109,7 +122,7 @@ jobs:
             printf 'mercury (%s-1) unstable; urgency=medium\n\n' "$VERSION"
             printf '  * Release %s.\n' "$VERSION"
             printf '%b' "$PR_ENTRIES"
-            printf '\n -- Rafael Diniz <rafael@riseup.net>  %s\n\n' "$DATE"
+            printf '\n\n -- Rafael Diniz <rafael@riseup.net>  %s\n\n' "$DATE"
           } | cat - debian/changelog > debian/changelog.tmp
           mv debian/changelog.tmp debian/changelog
 
