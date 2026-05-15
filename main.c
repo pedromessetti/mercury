@@ -18,7 +18,7 @@
  *
  */
 
-#define VERSION__ "2.0.0"
+#define VERSION__ "2.0.1"
 #ifndef GIT_HASH
 #define GIT_HASH "unknown000"
 #endif
